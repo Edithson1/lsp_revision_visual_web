@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Revisión visual de videos simulados de Lengua de Señas Peruana, en tu PC.">
+  <title>Revisión visual · LSP</title><link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <svg class="svg-defs" aria-hidden="true"><defs>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m9 5 11 7-11 7z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+    <symbol id="i-export" viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/></symbol>
+  </defs></svg>
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="Revisión visual LSP"><span class="brand-mark">L<span>SP</span></span><span>Laboratorio de<br><strong>revisión visual</strong></span></a>
+    <div class="sidebar-label">ESPACIO DE REVISIÓN</div>
+    <div class="scope-nav" role="group" aria-label="Alcance de revisión">
+      <button data-scope="required" class="scope active"><svg><use href="#i-check"/></svg><span>Solicitados en el README<small>38 videos de prueba</small></span><b>38</b></button>
+      <button data-scope="listed" class="scope"><svg><use href="#i-grid"/></svg><span>Lista completa<small>Los 290 registros del CSV</small></span></button>
+      <button data-scope="all" class="scope"><svg><use href="#i-play"/></svg><span>Explorar train, val y test<small>Todos los simulados</small></span></button>
+    </div>
+    <div class="sidebar-rule"></div>
+    <div class="sidebar-label">BUSCAR UN VIDEO</div>
+    <label class="search"><svg><use href="#i-search"/></svg><input id="search" type="search" placeholder="Glosa, efecto o número…" aria-label="Buscar videos"></label><button id="toggleFilters" class="mobile-filters" aria-expanded="false" type="button">Filtros</button>
+    <div class="filter-row"><select id="splitFilter" aria-label="Filtrar por conjunto"><option value="">Todos los conjuntos</option><option value="train">Train</option><option value="val">Val</option><option value="test">Test</option></select><select id="statusFilter" aria-label="Filtrar por estado"><option value="">Todos los estados</option><option value="pending">Pendientes</option><option value="reviewed">Revisados</option><option value="flagged">Con incidencia</option></select></div>
+    <select id="familyFilter" aria-label="Filtrar por familia"><option value="">Todos los efectos</option><option value="gafas">Gafas</option><option value="objeto">Objeto en mano</option><option value="desenfoque">Desenfoque</option><option value="oclusion">Oclusión</option><option value="combinado">Combinados</option></select>
+    <div class="list-heading"><span id="listCount">Cargando videos…</span><span id="listPosition"></span></div>
+    <div id="videoList" class="video-list" role="navigation" aria-label="Lista de videos"></div>
+    <div class="sidebar-bottom"><span class="local-dot"></span><div>Archivos en tu PC<small>Los videos permanecen en sus carpetas.</small></div><button id="helpButton" title="Guía y carpetas" aria-label="Ver guía y carpetas">?</button></div>
+  </aside>
+
+  <main>
+    <header class="topbar"><div class="breadcrumb">Proyecto LSP <span>/</span> <strong>Revisión de simulaciones</strong></div><div class="header-actions"><span id="saveStatus" role="status" aria-live="polite">Sin revisiones todavía</span><button id="exportButton" class="button light"><svg><use href="#i-export"/></svg>Exportar revisión</button></div></header>
+    <div class="workspace">
+      <section class="page-heading"><div><div class="eyebrow">REVISIÓN MANUAL DE EFECTOS</div><h1>Revisión de videos</h1><p>Compara las versiones y registra lo que ves.</p></div><div class="progress-block"><div><span id="progressText">0 de 38 revisados</span><b id="progressPercent">0%</b></div><div class="progress-track"><div id="progressBar"></div></div><small id="progressHint">Revisión solicitada en el README</small></div></section>
+      <div id="scopeNotice" class="scope-notice" hidden>Modo ampliado. El README pide solo 38 videos de prueba. Estas clasificaciones adicionales se guardan y se exportan aparte.</div>
+      <div id="loadError" class="error-banner" hidden></div>
+      <section id="emptyState" class="empty-state" hidden><h2>No hay videos con estos filtros</h2><p>Prueba otra glosa o muestra todos los estados.</p><button id="resetFilters" class="button">Limpiar filtros</button></section>
+      <div id="reviewWorkspace" hidden>
+        <section class="case-heading"><div><div class="case-tags"><span id="caseNumber" class="tag"></span><span id="caseSplit" class="tag neutral"></span><span id="caseEffect" class="effect-tag"></span><span id="caseReviewed" class="tag success" hidden>Revisado</span></div><h2 id="caseName"></h2></div><div class="case-nav"><button id="previous" class="icon-button" aria-label="Video anterior">←</button><span id="casePosition"></span><button id="next" class="icon-button" aria-label="Video siguiente">→</button></div></section>
+        <div class="variant-picker"><label for="variantSelect">Versión del simulado</label><select id="variantSelect" aria-label="Elegir versión del simulado"></select></div>
+        <div id="variantNotice" class="variant-notice" role="note"></div>
+        <section class="comparison" aria-label="Comparación de videos">
+          <article class="video-card"><header><span class="video-label"><span class="version-dot"></span>REFERENCIA</span><select id="referenceSelect" aria-label="Elegir video de referencia"><option value="original">Original organizado</option><option value="base">Base del simulador</option><option value="before">Antes de la corrección</option></select></header><div class="video-stage"><video id="referenceVideo" muted playsinline preload="auto" aria-label="Video de referencia"></video><div id="referenceViewport" class="exact-viewport" hidden><img id="referenceFrame" alt="Fotograma exacto de la referencia"></div><div id="referenceLoading" class="video-loading" hidden>Preparando referencia…</div><div id="referenceError" class="video-error" hidden>El original no está disponible.</div></div><footer><span id="referenceCaption">Original organizado</span><span id="referenceVersion">Referencia</span></footer></article>
+          <article class="video-card simulated"><header><span class="video-label"><span class="version-dot orange"></span>SIMULADO</span><span id="effectCaption"></span></header><div class="video-stage"><video id="simulatedVideo" muted playsinline preload="auto" aria-label="Video simulado para revisar"></video><div id="simulatedViewport" class="exact-viewport" hidden><img id="simulatedFrame" alt="Fotograma exacto del simulado"></div><div id="simulatedLoading" class="video-loading" hidden>Preparando reproducción fluida…</div><div id="simulatedError" class="video-error" hidden>No se pudo preparar la vista. Vuelve a abrir este registro antes de clasificar el archivo.</div></div><footer><span id="simulationCaption"></span><span id="coverage"></span></footer></article>
+        </section>
+        <div class="comparison-tools"><label>Vista <select id="viewMode" aria-label="Modo de comparación"><option value="fluid">Reproducción fluida</option><option value="exact">Fotograma exacto</option></select></label><label id="zoomControl" hidden>Ampliación <select id="detailZoom" aria-label="Ampliación del fotograma"><option value="fit">Encajar</option><option value="1">100 %</option><option value="2">200 %</option></select></label><span id="viewHint">Full HD · Para revisar el movimiento.</span></div>
+        <div class="shared-timeline"><label for="comparisonTimeline">Tiempo compartido</label><input id="comparisonTimeline" type="range" min="0" max="0" value="0" step="1" aria-label="Fotograma de la comparación"><output id="framePosition" for="comparisonTimeline">0 / 0</output></div>
+        <div class="playback-bar"><div class="playback-main"><button id="playBoth" class="button dark"><svg><use href="#i-play"/></svg><span>Reproducir ambos</span></button><button id="restartBoth" class="text-button">↺ Volver al inicio</button><label class="speed-label">Velocidad <select id="playbackRate" aria-label="Velocidad de reproducción"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option></select></label><label class="check-inline"><input id="loopVideos" type="checkbox" checked> Repetir</label></div><div class="frame-controls"><button id="stepBack" class="icon-button" title="Retroceder un fotograma en ambos" aria-label="Retroceder un fotograma">‹Ⅰ</button><button id="stepForward" class="icon-button" title="Avanzar un fotograma en ambos" aria-label="Avanzar un fotograma">Ⅰ›</button><small>1 fotograma por paso</small></div></div>
+        <p id="playbackStatus" class="playback-status" role="status" aria-live="polite">Preparando comparación…</p>
+        <section id="correctionNotice" class="correction-notice" hidden><strong>Versión corregida · 15/11/2026</strong><span>Se corrigió la protección de boca y barbilla al agacharse; intensidad corporal 7. Elige «Antes de la corrección» para contrastar la nota del Excel. <a href="/?n=114&amp;frame=51&amp;view=exact">Ver el momento señalado (1,70 s)</a></span></section>
+        <section class="expectation"><div class="expectation-icon">i</div><div><h3>Qué debes observar</h3><p id="expectationText"></p><p id="knownText" class="known-text" hidden></p></div></section>
+        <form id="reviewForm" class="review-form">
+          <div class="form-heading"><h3>Tu revisión</h3><span>Solo se clasifica el efecto del video simulado.</span></div>
+          <div class="result-heading"><label>Resultado <span class="required-mark">*</span></label><small>Atajos <kbd>1</kbd>–<kbd id="shortcutMax">4</kbd></small></div>
+          <div id="resultOptions" class="result-options" role="group" aria-label="Resultado de la revisión"></div>
+          <div class="form-grid"><label>Revisado por <span class="required-mark">*</span><input id="reviewer" name="reviewer" autocomplete="name" placeholder="Tu nombre completo" maxlength="250" required></label><label>Fecha <span class="required-mark">*</span><input id="reviewDate" type="date" required></label><label class="observation-field">Observación <span id="observationRequired" class="required-mark" hidden>*</span><textarea id="observation" rows="2" maxlength="5000" placeholder="Describe lo que llama la atención, si lo hay."></textarea></label></div>
+          <div class="form-footer"><div class="review-flags"><label class="check-inline"><input id="doubt" type="checkbox"> Tengo una duda</label><label class="check-inline"><input id="serious" type="checkbox"> Incidencia grave</label><button id="notOpening" type="button" class="text-button">El video no abre</button></div><div class="save-actions"><span id="draftStatus" role="status" aria-live="polite"></span><button id="saveOnly" type="button" class="button light">Guardar</button><button id="saveNext" type="submit" class="button primary">Guardar y siguiente<svg><use href="#i-arrow"/></svg></button></div></div>
+          <p id="formError" class="form-error" role="alert" hidden></p>
+        </form>
+        <details class="file-details"><summary>Ver archivo, aviso del simulador y criterio de revisión</summary><dl><dt>Archivo simulado</dt><dd id="filePath"></dd><dt>Aviso del simulador</dt><dd id="warningText"></dd><dt>Alcance</dt><dd id="scopeText"></dd><dt>Continuidad de reproducción</dt><dd id="playbackDiagnostics">Aún no se ha reproducido.</dd></dl></details>
+      </div>
+      <footer class="workspace-footer"><span>LENGUA DE SEÑAS PERUANA</span><span>Revisión visual de efectos · D48</span><span>Los videos no se modifican.</span></footer>
+    </div>
+  </main>
+
+  <dialog id="exportDialog"><form method="dialog"><button class="dialog-close" aria-label="Cerrar">×</button></form><span class="eyebrow">TU TRABAJO GUARDADO</span><h2>Exportar revisión</h2><p id="exportSummary"></p><div class="export-options"><a class="export-item" href="/api/export/xlsx"><span class="export-icon">X</span><span><strong>Excel para entregar a Leily</strong><small>Conserva las 290 filas. Completa solo los 38 registros solicitados.</small></span><span>↗</span></a><a class="export-item" href="/api/export/csv"><span class="export-icon">C</span><span><strong>CSV de la revisión solicitada</strong><small>Mismo contenido y columnas del archivo original.</small></span><span>↗</span></a><a class="export-item" href="/api/export/extended"><span class="export-icon">+</span><span><strong>Clasificaciones ampliadas</strong><small>Todos los casos guardados de train, val y test, incluidos los solicitados.</small></span><span>↗</span></a><a class="export-item" href="/api/export/json"><span class="export-icon">{ }</span><span><strong>Copia de respaldo</strong><small>Descarga todas las revisiones guardadas en JSON.</small></span><span>↗</span></a></div><p class="dialog-note">El Excel incluye las revisiones guardadas. Los borradores aún no cuentan como revisados.</p></dialog>
+  <dialog id="helpDialog"><form method="dialog"><button class="dialog-close" aria-label="Cerrar">×</button></form><span class="eyebrow">GUÍA DE REVISIÓN</span><h2>Empieza por los 38 solicitados</h2><p>El README indica revisar gafas (n 1–9), objeto en mano (n 50–53) y desenfoque (n 104–128). Excluye train, val, oclusiones y combinados de esta entrega.</p><p>Puedes explorar y clasificar los demás en el modo ampliado. Se guardan aparte del Excel solicitado. La revisión no excluye videos ni modifica el material.</p><ol><li>Compara las dos versiones. Usa 0.5× y los pasos de tiempo si necesitas mirar con detalle.</li><li>Elige el resultado. Completa tu nombre y la fecha real de revisión.</li><li>Explica «no coincide» u «otro». Si no abre: «otro» y «no abre».</li><li>Guarda y continúa. Al terminar, exporta el Excel y avisa a Leily de las incidencias graves.</li></ol><h3>Guardado local</h3><p>Al pulsar Guardar, la revisión se escribe en un archivo de tu PC. Los cambios pendientes se conservan como borrador en este navegador.</p><div id="localPaths" class="local-paths"></div><p><kbd>Espacio</kbd> reproducir/pausar · <kbd>1</kbd>–<kbd>5</kbd> resultado · <kbd>Ctrl</kbd> + <kbd>Enter</kbd> guardar y siguiente.</p></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script src="/playback.js" defer></script><script src="/app.js" defer></script>
+</body>
+</html>
